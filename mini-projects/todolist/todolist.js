@@ -1,4 +1,3 @@
-import { Console } from "console";
 import readline from "readline"
 
 const rl = readline.createInterface({
