@@ -16,7 +16,7 @@
             </div>
             <div>
                 <label for="shortCode"> Enter shortCode</label>
-                <input type="text" name="shortCode" id="shortCode" required>
+                <input type="text" name="shortCode" id="shortCode">
             </div>
             <button type="submit">Shorten</button>
         </form>
@@ -34,7 +34,8 @@
 
             for (const [shortCode, url] of Object.entries(links)){
                 const li = document.createElement("li");
-                li.innerHTML = `<a href="/${shortCode}" target="_blank">${window.location.origin}/${shortCode}</a> - ${url}`
+                const truncateURL = url.length >= 55 ? `${url.slice(0,55)}...` : url;
+                li.innerHTML = `<a href="/${shortCode}" target="_blank">${window.location.origin}/${shortCode}</a> - ${truncateURL}`
                 list.appendChild(li)
             }
         }

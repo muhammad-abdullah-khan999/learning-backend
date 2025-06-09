@@ -51,8 +51,15 @@ const server = createServer(async (request, response) => {
             response.writeHead(200, { "Content-Type": "application/json" })
             return response.end(JSON.stringify(links))
         } else {
-            response.writeHead(404, { "Content-Type": "text/html" });
-            response.end("404 page not found");
+            const links = await loadLinks()
+            const shortCode = request.url.slice(1);
+            if(links[shortCode]){
+                response.writeHead(302, {location: links[shortCode]})
+                return response.end()
+            }
+
+            response.writeHead(404, { "Content-Type": "text/plain" });
+            return response.end("Shortened URL is not found");
         }
     } else if (request.method === "POST" && request.url === '/shorten') {
         const links = await loadLinks();
