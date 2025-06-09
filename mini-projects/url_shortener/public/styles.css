@@ -45,7 +45,7 @@ input {
     border-radius: 4px;
     box-sizing: border-box;
     margin-bottom: 30px;
-    background: lightgrey
+    background: #f9f9f9;
 }
 
 button {
@@ -62,25 +62,34 @@ button:hover {
     background-color: #0056b3;
 }
 
-.shortened-urls {
+#shortened-urls {
     margin-top: 20px;
+    margin-right: 20px;
     text-align: left;
+    padding-left: 0;
+    list-style-type: none;
+    width: 90%;
+    padding: 20px;
+    padding-top: 20px;
 }
 
-.shortened-urls h2 {
-    margin-top: 60px;
+#shortened-urls li {
     margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    background: #f9f9f9;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    word-break: break-all;
 }
 
-.shortened-urls p {
-    margin: 5px 0;
-}
-
-.shortened-urls a {
+#shortened-urls a {
     color: #007bff;
     text-decoration: none;
+    font-weight: 500;
 }
 
-.shortened-urls a:hover {
+#shortened-urls a:hover {
     text-decoration: underline;
 }

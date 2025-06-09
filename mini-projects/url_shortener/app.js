@@ -46,6 +46,10 @@ const server = createServer(async (request, response) => {
         } else if (request.url === "/styles.css") {
             const filePath = path.join(__dirname, "public", "styles.css");
             return serveFile(response, filePath, "text/css");
+        } else if (request.url === "/links" || request.url === "/links.json") {
+            const links = await loadLinks();
+            response.writeHead(200, { "Content-Type": "application/json" })
+            return response.end(JSON.stringify(links))
         } else {
             response.writeHead(404, { "Content-Type": "text/html" });
             response.end("404 page not found");
