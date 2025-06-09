@@ -42,6 +42,7 @@
 
                 if(response.ok){
                     alert("Form successfully submitted")
+                    event.target.reset()
                 } else {
                     const errorMessage = await response.text()
                     alert(errorMessage)
