@@ -1,98 +1,82 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import { createServer } from 'http';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import crypto from 'crypto';
+import express from "express";
+import { readFile, writeFile, access } from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+import bodyParser from "body-parser";
+
+const app = express();
+const PORT = 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const port = 3000;
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
+
 const DATA_FILE = path.join(__dirname, "data", "links.json");
 
-const serveFile = async (response, filePath, contentType) => {
-    try {
-        const data = await readFile(filePath);
-        response.writeHead(200, { "Content-Type": contentType });
-        response.end(data);
-    } catch (error) {
-        response.writeHead(404, { "Content-Type": contentType });
-        response.end("404 page not found");
-    }
-};
+async function readData() {
+  try {
+    await access(DATA_FILE);
+  } catch {
+    await writeFile(DATA_FILE, JSON.stringify({}));
+  }
 
-const loadLinks = async () => {
-    try {
-        const data = await readFile(DATA_FILE, "utf-8");
-        return JSON.parse(data);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            await mkdir(path.dirname(DATA_FILE), { recursive: true });
-            await writeFile(DATA_FILE, JSON.stringify({}));
-            return {};
-        }
-        throw error;
-    }
-};
+  const data = await readFile(DATA_FILE, "utf-8");
+  return JSON.parse(data);
+}
 
-const saveLinks = async (links) => {
-    await writeFile(DATA_FILE, JSON.stringify(links, null, 2)); 
-};
+async function writeData(data) {
+  await writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+}
 
-const server = createServer(async (request, response) => {
-    if (request.method === "GET") {
-        if (request.url === "/") {
-            const filePath = path.join(__dirname, "public", "index.html");
-            return serveFile(response, filePath, "text/html");
-        } else if (request.url === "/styles.css") {
-            const filePath = path.join(__dirname, "public", "styles.css");
-            return serveFile(response, filePath, "text/css");
-        } else if (request.url === "/links" || request.url === "/links.json") {
-            const links = await loadLinks();
-            response.writeHead(200, { "Content-Type": "application/json" })
-            return response.end(JSON.stringify(links))
-        } else {
-            const links = await loadLinks()
-            const shortCode = request.url.slice(1);
-            if(links[shortCode]){
-                response.writeHead(302, {location: links[shortCode]})
-                return response.end()
-            }
+app.get("/", async (req, res) => {
+  const file = await readFile(path.join(__dirname, "views", "index.html"), "utf-8");
+  const data = await readData();
 
-            response.writeHead(404, { "Content-Type": "text/plain" });
-            return response.end("Shortened URL is not found");
-        }
-    } else if (request.method === "POST" && request.url === '/shorten') {
-        const links = await loadLinks();
+  const linksHtml = Object.entries(data).map(([shortCode, url]) => (`
+    <li>
+      <a href="/${shortCode}" target="_blank">${req.headers.host}/${shortCode}</a>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${req.headers.host}/${shortCode}')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"/>
+        </svg>
+      </button>
+    </li>
+  `)).join("");
 
-        let body = '';
-        request.on('data', (chunk) => (body += chunk)); 
-        request.on('end', async () => {
-            const { url, shortCode } = JSON.parse(body);
-
-            if (!url) {
-                response.writeHead(400, { "Content-Type": "text/html" });
-                return response.end("url is required");
-            }
-
-            const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
-
-            if (links[finalShortCode]) {
-                response.writeHead(400, { "Content-Type": "text/plain" });
-                return response.end("shortCode already exists. Please enter another shortCode");
-            }
-
-            links[finalShortCode] = url;
-            await saveLinks(links);
-
-            response.writeHead(200, { "Content-Type": "application/json" });
-            response.end(JSON.stringify({ success: true, finalShortCode }));
-        });
-    } else {
-        response.writeHead(405, { "Content-Type": "text/html" });
-        response.end("Method not allowed");
-    }
+  res.send(file.replace("{{ shortened_urls }}", linksHtml));
 });
 
-server.listen(port, () => {
-    console.log(`Server Running on http://localhost:${port}`);
+app.post("/shorten", async (req, res) => {
+  const { url, shortCode } = req.body;
+
+  if (!url || !shortCode) {
+    return res.status(400).send("URL and shortCode are required.");
+  }
+
+  const data = await readData();
+
+  if (data[shortCode]) {
+    return res.status(400).send("Short code already exists.");
+  }
+
+  data[shortCode] = url;
+  await writeData(data);
+  res.redirect("/");
+});
+
+app.get("/:shortCode", async (req, res) => {
+  const data = await readData();
+  const url = data[req.params.shortCode];
+
+  if (url) {
+    res.redirect(url);
+  } else {
+    res.status(404).send("Short URL not found.");
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });

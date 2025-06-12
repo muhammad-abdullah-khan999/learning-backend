@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>URL Shortener</h1>
-        <form action="/" method="post">
+        <form action="/shorten" method="post">
             <div>
                 <label for="url">Enter URL:</label>
                 <input type="text" name="url" id="url" required>
@@ -21,13 +21,12 @@
             <button type="submit">Shorten</button>
         </form>
         <h2>Shortened URLs</h2>
-        <ul>
+        <ul id="shortened-urls">
             {{ shortened_urls }}
         </ul>
     </div>
 
     <script>
-        
     </script>
 </body>
 </html>

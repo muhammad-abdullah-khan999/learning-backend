@@ -84,26 +84,27 @@ button:hover {
 }
 
 #shortened-urls li {
-    margin-bottom: 10px;
-    font-size: 14px;
-    line-height: 1.5;
-    background: #f9f9f9;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 8px;
     border-radius: 4px;
     border: 1px solid #e0e0e0;
-    word-break: break-all;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background: #f9f9f9;
+    margin-bottom: 10px;
+    word-break: break-word;
 }
 
 #shortened-urls a {
-    color: #007bff;
+    flex: 1; /* Fills the remaining space */
+    min-width: 0;
+    overflow-wrap: anywhere;
     text-decoration: none;
+    color: #007bff;
     font-weight: 500;
-    flex-grow: 1;
-    margin-right: 10px;
+    margin-right: 5px;
 }
+
 
 #shortened-urls a:hover {
     text-decoration: underline;
