@@ -1,82 +1,104 @@
 import express from "express";
-import { readFile, writeFile, access } from "fs/promises";
+import { readFile, writeFile } from "fs/promises";
+import crypto from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
-import bodyParser from "body-parser";
 
 const app = express();
-const PORT = 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const port = 3000;
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
+const dataDir = path.join(__dirname, "data");
+const DATA_FILE = path.join(dataDir, "links.json");
+const HTML_FILE = path.join(__dirname, "views", "index.html");
 
-const DATA_FILE = path.join(__dirname, "data", "links.json");
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("./public"));
 
-async function readData() {
-  try {
-    await access(DATA_FILE);
-  } catch {
-    await writeFile(DATA_FILE, JSON.stringify({}));
-  }
+const loadLinks = async () => {
+    try {
+        const data = await readFile(DATA_FILE, "utf-8");
+        return JSON.parse(data);
+    } catch (error) {
+        if (error.code === "ENOENT") {
+            try {
+                await writeFile(DATA_FILE, JSON.stringify({}));
+                return {};
+            } catch (innerError) {
+                if (innerError.code === "ENOENT") {
+                    await writeFile(path.join(__dirname, "data", ".keep"), "");
+                    await writeFile(DATA_FILE, JSON.stringify({}));
+                    return {};
+                }
+                throw innerError;
+            }
+        }
+        throw error;
+    }
+};
 
-  const data = await readFile(DATA_FILE, "utf-8");
-  return JSON.parse(data);
-}
-
-async function writeData(data) {
-  await writeFile(DATA_FILE, JSON.stringify(data, null, 2));
-}
+const saveLinks = async (links) => {
+    await writeFile(DATA_FILE, JSON.stringify(links, null, 2));
+};
 
 app.get("/", async (req, res) => {
-  const file = await readFile(path.join(__dirname, "views", "index.html"), "utf-8");
-  const data = await readData();
+    try {
+        const file = await readFile(HTML_FILE, "utf-8");
+        const links = await loadLinks();
 
-  const linksHtml = Object.entries(data).map(([shortCode, url]) => (`
-    <li>
-      <a href="/${shortCode}" target="_blank">${req.headers.host}/${shortCode}</a>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${req.headers.host}/${shortCode}')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"/>
-        </svg>
-      </button>
-    </li>
-  `)).join("");
+        const content = file.replace("{{ shortened_urls }}",
+            Object.entries(links)
+                .map(([shortCode, url]) =>
+                    `<li><a href="/${shortCode}" target="_blank">${req.get("host")}/${shortCode}</a> — ${url}</li>`
+                )
+                .join("")
+        );
 
-  res.send(file.replace("{{ shortened_urls }}", linksHtml));
+        res.send(content);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
-app.post("/shorten", async (req, res) => {
-  const { url, shortCode } = req.body;
+app.post("/", async (req, res) => {
+    try {
+        const { url, shortCode } = req.body;
+        const links = await loadLinks();
+        const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
 
-  if (!url || !shortCode) {
-    return res.status(400).send("URL and shortCode are required.");
-  }
+        if (links[finalShortCode]) {
+            return res.status(400).send("shortCode already exists. Please enter another one.");
+        }
 
-  const data = await readData();
+        links[finalShortCode] = url;
+        await saveLinks(links);
 
-  if (data[shortCode]) {
-    return res.status(400).send("Short code already exists.");
-  }
-
-  data[shortCode] = url;
-  await writeData(data);
-  res.redirect("/");
+        res.redirect("/");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 app.get("/:shortCode", async (req, res) => {
-  const data = await readData();
-  const url = data[req.params.shortCode];
+    try {
+        const { shortCode } = req.params;
+        const links = await loadLinks();
 
-  if (url) {
-    res.redirect(url);
-  } else {
-    res.status(404).send("Short URL not found.");
-  }
+        if (!links[shortCode]) {
+            return res.status(404).send("404 - Short URL not found");
+        }
+
+        res.redirect(links[shortCode]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
