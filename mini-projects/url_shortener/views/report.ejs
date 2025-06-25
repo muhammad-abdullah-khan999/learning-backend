@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Student Report Card</title>
 </head>
 <body>
     <h1>This is Student Report Card.</h1>
-    <p>Name: <%= student.name %></p>
-    <p>Grade: <%= student.grade %></p>
-    <p>Favorite Subject: <%= student.favouriteSubject %></p>
+    <% student.map((stud) => { %>
+    <p>Name: <%= stud.name %></p>
+    <p>Grade: <%= stud.grade %></p>
+    <p>Favorite Subject: <%= stud.favouriteSubject %></p>
+    <br/>
+    <% }) %>
 </body>
 </html>
