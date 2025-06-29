@@ -22,7 +22,7 @@
         </form>
         <h2>Shortened URLs</h2>
         <ul id="shortened-urls">
-            <% Object.entries(links).map(([shortCode, url]) => { %>
+            <% links.map(({shortCode, url}) => { %>
                 <li>
                      <a href="/<%= shortCode%>" target="_blank"><%= host%>/<%= shortCode%></a>
                         <button class="copy-btn" onclick="navigator.clipboard.writeText('<%= host%>/<%= shortCode%>')">

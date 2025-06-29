@@ -82,27 +82,30 @@
 
 
 
-const http = require("http")
+// const http = require("http")
 
-const server = http.createServer((req, res) => {
-    if(req.url === "/") {
-        res.write("Welcome to the Home/Main Page, Updated");
-        res.end();
-    } else if(req.url === "/contact"){
-        res.write("Welcome to the Contact Page");
-        res.end();
-    } else if(req.url === "/about"){
-        res.write("Welcome to the About Page");
-        res.end();
-    } else {
-        res.write("404 Not Found");
-        res.end();
-    }
-});
+// const server = http.createServer((req, res) => {
+//     if(req.url === "/") {
+//         res.write("Welcome to the Home/Main Page, Updated");
+//         res.end();
+//     } else if(req.url === "/contact"){
+//         res.write("Welcome to the Contact Page");
+//         res.end();
+//     } else if(req.url === "/about"){
+//         res.write("Welcome to the About Page");
+//         res.end();
+//     } else {
+//         res.write("404 Not Found");
+//         res.end();
+//     }
+// });
 
-const port = 3000;
-server.listen(port, () => {
-    console.log(`Listening on port ${port}`);
-});
+// const port = 3000;
+// server.listen(port, () => {
+//     console.log(`Listening on port ${port}`);
+// });
+
+
+
 
 
