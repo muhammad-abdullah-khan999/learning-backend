@@ -1,10 +1,9 @@
-import mongoose from "mongoose";
-import { env } from "./env.js";
+import mysql from 'mysql2/promise'
+import { env } from './env.js'
 
-export const connectDB =  async () => {
-    try {
-        await mongoose.connect(env.MONGODB_URI)
-    } catch (error) {
-        console.error(error)
-    }
-}
+export const db = await mysql.createConnection({
+    host: env.DATABASE_HOST,
+    user: env.DATABASE_USER,
+    database: env.DATABASE_NAME,
+    password: env.DATABASE_PASSWORD
+})

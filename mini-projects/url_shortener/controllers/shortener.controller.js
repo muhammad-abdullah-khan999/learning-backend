@@ -1,9 +1,11 @@
 import crypto from 'crypto'
 import { urls } from '../schema/url_schema.js';
+import { getLinkByShortCode, insertShortLink, loadLinks} from '../models/shortener.model.js';
 
 export const getShortenerPage = async (req, res) => {
     try {
-        const links = await urls.find()
+        const links = await loadLinks();
+        // const links = await urls.find()
         return res.render("index", {links, host:req.get("host")})
     } catch (error) {
         console.error(error);
@@ -15,13 +17,15 @@ export const postURLShortener = async (req, res) => {
     try {
         const { url, shortCode } = req.body;
         const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
-        const links = await urls.find()
+        const links = await loadLinks();
+
 
         if (links[finalShortCode]) {
             return res.status(400).send("Short code already exists. Please enter another short code.");
         }
 
-        await urls.create({url, shortCode})
+        // await urls.create({url, shortCode})
+        await insertShortLink({url, shortCode: finalShortCode})
 
         return res.redirect("/");
     } catch (error) {
@@ -33,7 +37,8 @@ export const postURLShortener = async (req, res) => {
 export const redirectToShortLink = async (req, res) => {
     try {
         const { shortCode } = req.params;
-        const link = await urls.findOne({shortCode: shortCode})
+        // const link = await urls.findOne({shortCode: shortCode})
+        const link = await getLinkByShortCode(shortCode)
 
         if(!link) return res.redirect('/404')
 
