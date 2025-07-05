@@ -1,6 +1,8 @@
 import crypto from 'crypto'
 import { urls } from '../schema/url_schema.js';
-import { getLinkByShortCode, insertShortLink, loadLinks} from '../models/shortener.model.js';
+// import { getLinkByShortCode, insertShortLink, loadLinks} from '../models/shortener.model.js';
+import { getLinkByShortCode, insertShortLink, loadLinks} from '../services/shortener.services.js';
+
 
 export const getShortenerPage = async (req, res) => {
     try {
@@ -17,11 +19,12 @@ export const postURLShortener = async (req, res) => {
     try {
         const { url, shortCode } = req.body;
         const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
-        const links = await loadLinks();
+        // const links = await loadLinks();
+        const links = await getLinkByShortCode(finalShortCode)
 
 
-        if (links[finalShortCode]) {
-            return res.status(400).send("Short code already exists. Please enter another short code.");
+        if (links) {
+            return res.status(400).send('<h1>Short code already exists. Please enter another short code... <a href="/" >Go Back </a></h1>');
         }
 
         // await urls.create({url, shortCode})
