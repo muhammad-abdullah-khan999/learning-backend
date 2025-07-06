@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node -—env-file=.env--watch app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "",
@@ -11,9 +15,12 @@
   "type": "module",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.11.1"
+    "@prisma/client": "^6.11.1",
+    "drizzle-orm": "^0.44.2",
+    "mysql2": "^3.14.1"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.4",
     "prisma": "^6.11.1"
   }
 }
