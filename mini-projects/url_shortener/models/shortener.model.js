@@ -1,22 +1,21 @@
-// import { db } from "../config/db-client.js";
+import { readFile, writeFile } from "fs/promises";
+import path from "path";
 
-// export const loadLinks = async () => {
-//   const [rows] = await db.execute('select * from short_links');
-//   return rows;
-// }
+const DATA_FILE = path.join("data", "links.json");
 
-// export const insertShortLink = async ({url, shortCode}) => {
-//     const [result] = await db.execute('insert into short_links(short_code, url) values(?,?)', [shortCode,url])
-//     return result;
-// }
+export const loadLinks = async () => {
+  try {
+    const data = await readFile(DATA_FILE, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      await writeFile(DATA_FILE, JSON.stringify({}));
+      return {};
+    }
+    throw error;
+  }
+};
 
-// export const getLinkByShortCode = async (shortcode) => {
-//     const [rows] = await db.execute('select * from short_links where short_code = ?', [shortcode]);
-
-//     if (rows.length > 0) {
-//         return rows [0];
-//     } else {
-//         return null
-//     }
-// }
-
+export const saveLinks = async (links) => {
+  await writeFile(DATA_FILE, JSON.stringify(links));
+};

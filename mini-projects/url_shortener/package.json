@@ -1,10 +1,11 @@
 {
-  "name": "url_shortener",
+  "name": "url",
   "version": "1.0.0",
   "main": "app.js",
+  "type": "module",
   "scripts": {
-    "dev": "node -—env-file=.env--watch app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --env-file=.env --watch app.js ",
+    "start": "node --env-file=.env app.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -12,15 +13,15 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.11.1",
-    "drizzle-orm": "^0.44.2",
-    "mysql2": "^3.14.1"
+    "cookie-parser": "^1.4.7",
+    "drizzle-orm": "^0.39.3",
+    "ejs": "^3.1.10",
+    "express": "^5.0.1",
+    "mysql2": "^3.12.0"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.4",
-    "prisma": "^6.11.1"
+    "drizzle-kit": "^0.30.4"
   }
 }

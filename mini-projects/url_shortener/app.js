@@ -1,23 +1,25 @@
-import express from 'express';
-import { shortenerRoutes } from'./routes/shortener.routes.js'
-import { env } from './config/env.js';
-// import { connectDB } from './config/db-client.js';
+import express from "express";
+import { shortenerRoutes } from "./routes/shortener.routes.js";
+import { authRoutes } from "./routes/auth.routes.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
-const PORT = env.PORT;
+
+const PORT = process.env.PORT || 3000;
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
-app.set("view engine", "ejs")
+app.set("view engine", "ejs");
+// app.set("views", "./views")
 
-app.use(shortenerRoutes)
+app.use(cookieParser());
 
-try {
-    // await connectDB();
-    app.listen(PORT, () => {
-    console.log(`Server Running on http://localhost:${PORT}`);
-});   
-} catch (error) {
-    console.error(error);
-};
+// express router
+// app.use(router);
+app.use(authRoutes);
+app.use(shortenerRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
